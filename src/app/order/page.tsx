@@ -67,7 +67,8 @@ function OrderView() {
   ]
     .filter(Boolean)
     .join("\n");
-  const waHref = `https://wa.me/${settings.whatsapp}?text=${encodeURIComponent(msg)}`;
+  const waNumber = /^\d{9,15}$/.test(settings.whatsapp) ? settings.whatsapp : "";
+  const waHref = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
 
   return (
     <div className="container-x max-w-2xl py-10 md:py-16">

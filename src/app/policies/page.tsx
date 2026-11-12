@@ -14,9 +14,9 @@ export default function PoliciesPage() {
         <h1 className="mb-6 text-4xl font-bold text-choco">{t("policies")}</h1>
         <div className="card space-y-4 p-6">
           {lines.map((l, i) => {
-            const [head, ...rest] = l.split(/[:：]/);
-            return rest.length ? (
-              <p key={i}><b className="text-berry-deep">{head}:</b> {rest.join(":").trim()}</p>
+            const idx = l.search(/[:：]/);
+            return idx > 0 && idx <= 30 ? (
+              <p key={i}><b className="text-berry-deep">{l.slice(0, idx)}:</b> {l.slice(idx + 1).trim()}</p>
             ) : (
               <p key={i}>{l}</p>
             );

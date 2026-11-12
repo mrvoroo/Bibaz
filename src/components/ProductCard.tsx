@@ -22,7 +22,7 @@ export function ProductCard({ product, index = 0 }: { product: Product; index?: 
       transition={{ duration: 0.5, delay: Math.min(index, 4) * 0.07 }}
     >
       <Link
-        href={`/product/?slug=${product.slug}`}
+        href={`/product/?slug=${encodeURIComponent(product.slug)}`}
         className="card group block overflow-hidden transition-transform duration-300 hover:-translate-y-1.5"
         aria-label={name}
       >

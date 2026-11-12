@@ -48,13 +48,30 @@ export function safeParseCatalog(text: string): Partial<StoreData> | null {
     }
     if (obj.settings !== undefined) {
       if (typeof obj.settings !== "object" || Array.isArray(obj.settings)) return null;
-      out.settings = obj.settings;
+      const st = obj.settings as Record<string, unknown>;
+      // normalise fields the UI iterates over so a bad import can never crash pages
+      if ("testimonials" in st && !Array.isArray(st.testimonials)) st.testimonials = [];
+      if (Array.isArray(st.testimonials))
+        st.testimonials = (st.testimonials as { name?: unknown; text?: unknown }[]).filter((r) => r && typeof r.name === "string" && r.text && typeof r.text === "object").slice(0, 12);
+      if ("cities" in st && (!Array.isArray(st.cities) || !st.cities.every((c) => typeof c === "string"))) delete st.cities;
+      if ("transfer" in st && !Array.isArray(st.transfer)) delete st.transfer;
+      if ("cityFees" in st) {
+        const fees: Record<string, number> = {};
+        if (st.cityFees && typeof st.cityFees === "object")
+          for (const [k, v] of Object.entries(st.cityFees as Record<string, unknown>)) if (typeof v === "number" && isFinite(v) && v >= 0) fees[k] = v;
+        st.cityFees = fees;
+      }
+      for (const k of ["shippingFee", "freeShippingOver", "minOrder", "prepHours"]) {
+        if (k in st && !(typeof st[k] === "number" && isFinite(st[k] as number) && (st[k] as number) >= 0)) delete st[k];
+      }
+      if (typeof st.whatsapp === "string") st.whatsapp = st.whatsapp.replace(/\D/g, "").slice(0, 15);
+      out.settings = st as unknown as StoreData["settings"];
     }
     // products must be well formed or the storefront could crash
     const okProduct = (p: unknown) => {
       const x = p as { id?: unknown; slug?: unknown; name?: unknown; sizes?: unknown };
       return (
-        !!x && typeof x.id === "string" && typeof x.slug === "string" && !!x.name && typeof x.name === "object" &&
+        !!x && typeof x.id === "string" && typeof x.slug === "string" && /^[a-z0-9-]{1,80}$/.test(x.slug) && !!x.name && typeof x.name === "object" &&
         Array.isArray(x.sizes) && x.sizes.every((s: { price?: unknown }) => typeof s?.price === "number" && isFinite(s.price) && s.price >= 0)
       );
     };

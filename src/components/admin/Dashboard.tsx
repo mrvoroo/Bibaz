@@ -74,6 +74,7 @@ export function Dashboard() {
 
 interface Report {
   updatedAt: string;
+  history?: string;
   agents: { id: string; name: string; score: number; verdict: string; findings: { severity: string; text: string; status: string }[] }[];
 }
 
@@ -87,7 +88,8 @@ export function Agents() {
   const tone = (n: number) => (n >= 8 ? "text-green-700" : n >= 6 ? "text-amber-600" : "text-red-600");
   return (
     <>
-      <p className="mb-4 text-sm text-muted">{L("آخر تحديث", "Last updated")}: {r.updatedAt}</p>
+      <p className="mb-1 text-sm text-muted">{L("آخر تحديث", "Last updated")}: {r.updatedAt}</p>
+      {r.history && <p className="mb-4 text-sm font-bold text-berry-deep">{r.history}</p>}
       <div className="grid gap-4 md:grid-cols-3">
         {r.agents.map((a) => (
           <section key={a.id} className="card p-5">

@@ -285,9 +285,9 @@ function ProductView() {
 function Qty({ qty, setQty, label }: { qty: number; setQty: (n: number) => void; label: string }) {
   return (
     <div className="flex items-center rounded-full border-2 border-line bg-white" role="group" aria-label={label}>
-      <button type="button" className="h-11 w-11 text-xl font-bold" onClick={() => setQty(Math.max(1, qty - 1))} aria-label="-">−</button>
+      <button type="button" className="h-11 w-11 text-xl font-bold" onClick={() => setQty(Math.max(1, qty - 1))} aria-label={`${label} −`}>−</button>
       <span className="w-8 text-center text-lg font-extrabold" aria-live="polite">{qty}</span>
-      <button type="button" className="h-11 w-11 text-xl font-bold" onClick={() => setQty(Math.min(20, qty + 1))} aria-label="+">+</button>
+      <button type="button" className="h-11 w-11 text-xl font-bold" onClick={() => setQty(Math.min(20, qty + 1))} aria-label={`${label} +`}>+</button>
     </div>
   );
 }

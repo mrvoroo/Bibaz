@@ -12,7 +12,9 @@ import { uid, useCart, useDb, useOrders, useT } from "@/lib/store";
 import type { Order } from "@/lib/types";
 
 const SLOTS = ["10:00 - 13:00", "13:00 - 16:00", "16:00 - 19:00", "19:00 - 22:00"];
-const phoneOk = (p: string) => /^(\+?966|0)?5\d{8}$/.test(p.replace(/[\s-]/g, ""));
+// strip control characters / newlines so free text cannot forge extra lines in the WhatsApp message
+const clean = (s: string, max: number) => s.replace(/[\u0000-\u001f\u007f]+/g, " ").trim().slice(0, max);
+const phoneOk =(p: string) => /^(\+?966|0)?5\d{8}$/.test(p.replace(/[\s-]/g, ""));
 
 function dateStr(d: Date) {
   const z = (n: number) => String(n).padStart(2, "0");
@@ -96,8 +98,8 @@ export default function CheckoutPage() {
         date: f.date,
         time: f.time,
         notes: [
-          gift.on ? `🎁 هدية إلى ${gift.name.trim().slice(0, 60)} (${gift.phone.replace(/[\s-]/g, "").slice(0, 16)})${gift.msg.trim() ? ` «${gift.msg.trim().slice(0, 120)}»` : ""} - بدون ذكر الأسعار` : "",
-          f.notes.trim(),
+          gift.on ? `🎁 هدية إلى ${clean(gift.name, 60)} (${gift.phone.replace(/[^\d+]/g, "").slice(0, 16)})${clean(gift.msg, 120) ? ` «${clean(gift.msg, 120)}»` : ""} - بدون ذكر الأسعار` : "",
+          clean(f.notes, 300),
         ].filter(Boolean).join(" | ").slice(0, 300),
       },
       lines: result.lines.map((l) => ({
@@ -146,6 +148,8 @@ export default function CheckoutPage() {
           {Object.keys(errs).length > 0 && (
             <div role="alert" className="rounded-2xl border border-red-300 bg-red-50 p-3 text-sm font-bold text-red-700">
               {t("fix_errors")}
+              {errs.min && <div>{errs.min}</div>}
+              {errs.pay && <div>{errs.pay}</div>}
             </div>
           )}
 

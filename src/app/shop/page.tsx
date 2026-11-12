@@ -72,7 +72,12 @@ export default function ShopPage() {
 
       <section className="container-x pb-8 pt-28">
         {shown.length === 0 ? (
-          <p className="py-20 text-center text-lg text-muted">—</p>
+          <div className="py-20 text-center">
+            <p className="mb-4 text-lg text-muted">{lang === "ar" ? "لا توجد كيكات بهذا الاختيار" : "No cakes match this selection"}</p>
+            <button type="button" className="btn btn-ghost" onClick={() => { setFilter("all"); setOcc("all"); }}>
+              {lang === "ar" ? "إعادة ضبط الفلاتر" : "Reset filters"}
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
             {shown.map((p, i) => (
