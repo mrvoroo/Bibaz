@@ -116,12 +116,11 @@ export interface Settings {
   freeShippingOver: number; // 0 = off
   minOrder: number;
   prepHours: number;
-  cities: string[];
+  districts: { name: string; fee: number }[]; // Riyadh districts and their delivery fee
   transfer: TransferMethod[];
   cod: { enabled: boolean; fee: number };
   sizeUpgradeNudge: boolean;
   adminPassHash: string;
-  cityFees: Record<string, number>; // per-city delivery fee override
   about: L10n;
   policies: L10n; // multi-line text shown on /policies
   testimonials: { name: string; text: L10n }[]; // only real reviews; hidden if empty

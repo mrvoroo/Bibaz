@@ -36,3 +36,8 @@ assert(r.discount === 115, `bundle 145+170-200 => ${r.discount}`);
 const t = d.offers.map((o) => (o.id === "o-tiered" ? { ...o, active: true } : o));
 r = run([L("p1", 20, 3)], "", t);
 assert(Math.abs(r.discount - 43.5) < 0.01, `tiered 3 => 10% of 435 = ${r.discount}`);
+// district delivery fee (Riyadh only)
+r = computeCart([L("p1", 15, 1)], d.products, d.addons, d.offers, d.settings, "", { district: "الشفا" });
+assert(r.shipping === 35, `district الشفا => ${r.shipping}`);
+r = computeCart([L("p1", 15, 1)], d.products, d.addons, d.offers, d.settings, "", { district: "الملقا" });
+assert(r.shipping === 20, `district الملقا => ${r.shipping}`);

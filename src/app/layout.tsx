@@ -8,7 +8,7 @@ const display = El_Messiri({ subsets: ["arabic", "latin"], weight: ["500", "600"
 const logo = Aref_Ruqaa({ subsets: ["arabic", "latin"], weight: ["700"], variable: "--font-logo", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "بيبز | Bibaz — Cheesecake",
+  title: "بيباز | Bibaz — Cheesecake",
   description: "تشيز كيك فاخر بأربعة مقاسات، يُحضَّر طازجًا ويصل إلى بابك. Premium cheesecake in four sizes, baked fresh and delivered.",
 };
 

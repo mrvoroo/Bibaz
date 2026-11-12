@@ -264,7 +264,7 @@ function ProductView() {
           ) : null,
         )}
         <p className="text-sm text-muted md:col-span-3">
-          🚚 {t("delivery_fee_city")}: {Object.entries(data.settings.cityFees ?? {}).slice(0, 6).map(([c, f]) => `${c} ${money(f)}`).join(" · ") || money(data.settings.shippingFee)}
+          🚚 {t("riyadh_only")} · {t("delivery_fee_city")}: {(() => { const f = (data.settings.districts ?? []).map((d) => d.fee); return f.length ? `${money(Math.min(...f))} – ${money(Math.max(...f))}` : money(data.settings.shippingFee); })()}
           {" · "}
           <Link href="/policies/" className="font-bold text-berry underline">{t("policies")}</Link>
         </p>

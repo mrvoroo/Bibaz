@@ -42,9 +42,9 @@ export default function CheckoutPage() {
   }, [options.map((o) => o.id).join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
   const pay = options.find((o) => o.id === payId);
 
-  const [f, setF] = useState({ name: "", phone: "", city: settings.cities[0] ?? "", address: "", date: "", time: SLOTS[0], notes: "" });
+  const [f, setF] = useState({ name: "", phone: "", district: "", address: "", date: "", time: SLOTS[0], notes: "" });
   const [gift, setGift] = useState({ on: false, name: "", phone: "", msg: "" });
-  const result = useCartResult({ cod: pay?.type === "cod", city: f.city });
+  const result = useCartResult({ cod: pay?.type === "cod", district: f.district });
   const minDate = useMemo(() => dateStr(new Date(Date.now() + settings.prepHours * 3600_000)), [settings.prepHours]);
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -68,7 +68,7 @@ export default function CheckoutPage() {
     const er: Record<string, string> = {};
     if (f.name.trim().length < 2) er.name = t("required");
     if (!phoneOk(f.phone)) er.phone = t("bad_phone");
-    if (!f.city.trim()) er.city = t("required");
+    if (!f.district) er.district = t("required");
     if (f.address.trim().length < 6) er.address = t("required");
     if (!f.date || f.date < minDate) er.date = t("date_min", { d: minDate });
     if (gift.on && gift.name.trim().length < 2) er.gname = t("required");
@@ -77,7 +77,7 @@ export default function CheckoutPage() {
     if (!pay) er.pay = t("no_payment");
     setErrs(er);
     if (Object.keys(er).length || !pay) {
-      const order = ["name", "phone", "city", "date", "address", "gname", "gphone"];
+      const order = ["name", "phone", "district", "date", "address", "gname", "gphone"];
       const first = order.find((k) => er[k]);
       const el = first ? document.getElementById(first === "gname" ? "g-name" : first === "gphone" ? "g-phone" : `f-${first}`) : null;
       if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); (el as HTMLElement).focus({ preventScroll: true }); }
@@ -93,7 +93,7 @@ export default function CheckoutPage() {
       customer: {
         name: f.name.trim().slice(0, 80),
         phone: f.phone.replace(/[\s-]/g, "").slice(0, 16),
-        city: f.city.trim().slice(0, 60),
+        city: `الرياض - ${f.district}`.slice(0, 60),
         address: f.address.trim().slice(0, 300),
         date: f.date,
         time: f.time,
@@ -159,14 +159,16 @@ export default function CheckoutPage() {
             {field("phone", t("phone"), { type: "tel", inputMode: "tel", dir: "ltr", placeholder: "05XXXXXXXX", autoComplete: "tel", maxLength: 16 })}
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="f-city" className="mb-1 block text-sm font-bold">{t("city")}</label>
-                <select id="f-city" className="input" value={f.city} onChange={set("city")} aria-describedby="city-fee">
-                  {settings.cities.map((c) => (
-                    <option key={c}>{c}</option>
+                <label htmlFor="f-district" className="mb-1 block text-sm font-bold">{t("district")} <span className="font-normal text-muted">({t("riyadh_only")})</span></label>
+                <select id="f-district" className="input" value={f.district} onChange={set("district")} aria-invalid={!!errs.district} aria-describedby="district-fee">
+                  <option value="">{t("choose_district")}</option>
+                  {settings.districts.map((d) => (
+                    <option key={d.name} value={d.name}>{d.name} — {money(d.fee)}</option>
                   ))}
                 </select>
-                <p id="city-fee" className="mt-1 text-xs text-muted">
-                  {t("delivery_fee_city")}: <b>{money(settings.cityFees?.[f.city] ?? settings.shippingFee)}</b>
+                {errs.district && <p className="mt-1 text-sm font-bold text-red-600">{errs.district}</p>}
+                <p id="district-fee" className="mt-1 text-xs text-muted">
+                  {f.district ? <>{t("delivery_fee_city")}: <b>{money(settings.districts.find((d) => d.name === f.district)?.fee ?? settings.shippingFee)}</b></> : t("choose_district")}
                 </p>
               </div>
               {field("date", t("deliver_date"), { type: "date", min: minDate })}

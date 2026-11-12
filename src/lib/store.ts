@@ -53,14 +53,14 @@ export function safeParseCatalog(text: string): Partial<StoreData> | null {
       if ("testimonials" in st && !Array.isArray(st.testimonials)) st.testimonials = [];
       if (Array.isArray(st.testimonials))
         st.testimonials = (st.testimonials as { name?: unknown; text?: unknown }[]).filter((r) => r && typeof r.name === "string" && r.text && typeof r.text === "object").slice(0, 12);
-      if ("cities" in st && (!Array.isArray(st.cities) || !st.cities.every((c) => typeof c === "string"))) delete st.cities;
-      if ("transfer" in st && !Array.isArray(st.transfer)) delete st.transfer;
-      if ("cityFees" in st) {
-        const fees: Record<string, number> = {};
-        if (st.cityFees && typeof st.cityFees === "object")
-          for (const [k, v] of Object.entries(st.cityFees as Record<string, unknown>)) if (typeof v === "number" && isFinite(v) && v >= 0) fees[k] = v;
-        st.cityFees = fees;
+      if ("districts" in st) {
+        st.districts = Array.isArray(st.districts)
+          ? (st.districts as { name?: unknown; fee?: unknown }[])
+              .filter((d) => d && typeof d.name === "string" && d.name.length <= 60 && typeof d.fee === "number" && isFinite(d.fee) && d.fee >= 0)
+              .slice(0, 200)
+          : [];
       }
+      if ("transfer" in st && !Array.isArray(st.transfer)) delete st.transfer;
       for (const k of ["shippingFee", "freeShippingOver", "minOrder", "prepHours"]) {
         if (k in st && !(typeof st[k] === "number" && isFinite(st[k] as number) && (st[k] as number) >= 0)) delete st[k];
       }

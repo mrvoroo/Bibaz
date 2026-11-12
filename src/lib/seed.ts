@@ -279,7 +279,7 @@ export const SEED: StoreData = {
     },
   ],
   settings: {
-    storeName: { ar: "بيبز", en: "Bibaz" },
+    storeName: { ar: "بيباز", en: "Bibaz" },
     tagline: { ar: "تشيز كيك يُصنع بحب", en: "Cheesecake made with love" },
     whatsapp: "966500000000",
     instagram: "bibaz",
@@ -293,7 +293,6 @@ export const SEED: StoreData = {
     freeShippingOver: 0,
     minOrder: 0,
     prepHours: 24,
-    cities: ["الرياض", "جدة", "الدمام", "الخبر", "مكة المكرمة", "المدينة المنورة"],
     transfer: [
       {
         id: "t-scba",
@@ -325,14 +324,19 @@ export const SEED: StoreData = {
     ],
     cod: { enabled: false, fee: 0 },
     sizeUpgradeNudge: true,
-    cityFees: { "الرياض": 25, "جدة": 35, "الدمام": 35, "الخبر": 35, "مكة المكرمة": 40, "المدينة المنورة": 40 },
+    // SAMPLE district fees (Riyadh only). The owner edits them in Admin > Settings.
+    districts: [
+      ["العليا", 20], ["الملقا", 20], ["الصحافة", 25], ["حطين", 25], ["النرجس", 25], ["الياسمين", 25],
+      ["الربوة", 20], ["السليمانية", 20], ["الورود", 20], ["الملز", 20], ["النخيل", 20], ["المروج", 20],
+      ["قرطبة", 25], ["الرحمانية", 20], ["الواحة", 20], ["الشفا", 35], ["العزيزية", 35], ["نمار", 35], ["ظهرة لبن", 35], ["حي آخر في الرياض", 40],
+    ].map(([name, fee]) => ({ name: name as string, fee: fee as number })),
     about: {
-      ar: "بيبز مطبخ متخصص في التشيز كيك. نحضّر كل كيكة عند الطلب بمكوّنات فاخرة ونوصّلها لك مبرّدة.",
+      ar: "بيباز مطبخ متخصص في التشيز كيك. نحضّر كل كيكة عند الطلب بمكوّنات فاخرة ونوصّلها لك مبرّدة.",
       en: "Bibaz is a kitchen dedicated to cheesecake. Every cake is baked to order with premium ingredients and delivered chilled.",
     },
     policies: {
-      ar: "الدفع: بالتحويل البنكي أو المحفظة، ويُؤكَّد الطلب بعد استلام إيصال التحويل عبر واتساب.\nالتحضير: تُحضَّر الكيكات عند الطلب، يُرجى الطلب قبل 24 ساعة على الأقل.\nالتوصيل: مبرّد، ورسومه تختلف حسب المدينة وتظهر قبل تأكيد الطلب.\nالإلغاء والتعديل: يمكن الإلغاء أو التعديل قبل بدء التحضير بالتواصل معنا على واتساب.\nالاسترجاع: لأسباب صحية لا تُسترجع المنتجات الغذائية، وإن وصلتك كيكة بها مشكلة تواصل معنا خلال ساعتين من الاستلام مع صورة.",
-      en: "Payment: bank or wallet transfer; your order is confirmed once we receive the transfer receipt on WhatsApp.\nPreparation: cakes are baked to order, please order at least 24 hours ahead.\nDelivery: chilled; fees vary by city and are shown before you confirm.\nCancellation & changes: possible before preparation starts, contact us on WhatsApp.\nReturns: food items cannot be returned for health reasons; if there is a problem contact us within 2 hours of delivery with a photo.",
+      ar: "الدفع: بالتحويل البنكي أو المحفظة، ويُؤكَّد الطلب بعد استلام إيصال التحويل عبر واتساب.\nالتحضير: تُحضَّر الكيكات عند الطلب، يُرجى الطلب قبل 24 ساعة على الأقل.\nالتوصيل: مبرّد، ورسومه تختلف حسب الحي داخل الرياض وتظهر قبل تأكيد الطلب.\nالإلغاء والتعديل: يمكن الإلغاء أو التعديل قبل بدء التحضير بالتواصل معنا على واتساب.\nالاسترجاع: لأسباب صحية لا تُسترجع المنتجات الغذائية، وإن وصلتك كيكة بها مشكلة تواصل معنا خلال ساعتين من الاستلام مع صورة.",
+      en: "Payment: bank or wallet transfer; your order is confirmed once we receive the transfer receipt on WhatsApp.\nPreparation: cakes are baked to order, please order at least 24 hours ahead.\nDelivery: chilled; fees depend on your district in Riyadh and are shown before you confirm.\nCancellation & changes: possible before preparation starts, contact us on WhatsApp.\nReturns: food items cannot be returned for health reasons; if there is a problem contact us within 2 hours of delivery with a photo.",
     },
     testimonials: [],
     adminPassHash: "c4d21fcfd647b31e5311968633945c00a670cc0303d5d8ccd7acd73e0d105b22",

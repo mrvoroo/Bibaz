@@ -93,23 +93,22 @@ export function SettingsTab() {
           <Field label={L("الحد الأدنى للطلب", "Minimum order")}><NInput value={s.minOrder} onChange={(v) => set((x) => (x.minOrder = v))} /></Field>
           <Field label={L("ساعات التحضير المسبقة", "Prep lead time (hours)")}><NInput value={s.prepHours} onChange={(v) => set((x) => (x.prepHours = v))} /></Field>
         </div>
-        <Field label={L("المدن ورسوم التوصيل (سطر لكل مدينة: المدينة=الرسم)", "Cities & delivery fee (one per line: City=fee)")} hint={L("مثال: الرياض=25 . بدون رقم = الرسم العام.", "e.g. Riyadh=25 . No number = default fee.")} className="mt-4">
+        <Field label={L("أحياء الرياض ورسوم التوصيل (سطر لكل حي: الحي=الرسم)", "Riyadh districts & delivery fee (one per line: District=fee)")} hint={L("مثال: الملقا=20 . التوصيل داخل الرياض فقط. الحي الذي لا يظهر في القائمة لا يستطيع العميل طلبه. بدون رقم = الرسم العام أعلاه.", "e.g. Al Malqa=20 . Riyadh only. Districts not listed cannot be ordered. No number = the default fee above.")} className="mt-4">
           <textarea
-            className="input"
+            className="input !min-h-[260px]"
             dir="auto"
-            defaultValue={s.cities.map((c) => (s.cityFees?.[c] !== undefined ? `${c}=${s.cityFees[c]}` : c)).join("\n")}
+            defaultValue={s.districts.map((d) => `${d.name}=${d.fee}`).join("\n")}
             onBlur={(e) =>
               set((x) => {
-                const cities: string[] = [];
-                const fees: Record<string, number> = {};
+                const out: { name: string; fee: number }[] = [];
                 e.target.value.split("\n").forEach((raw) => {
-                  const [name, fee] = raw.split("=").map((p) => p.trim());
-                  if (!name) return;
-                  cities.push(name);
-                  if (fee !== undefined && fee !== "" && isFinite(Number(fee))) fees[name] = Math.max(0, Number(fee));
+                  const i = raw.lastIndexOf("=");
+                  const name = (i >= 0 ? raw.slice(0, i) : raw).trim().slice(0, 60);
+                  const feeRaw = i >= 0 ? raw.slice(i + 1).trim() : "";
+                  if (!name || out.some((d) => d.name === name)) return;
+                  out.push({ name, fee: feeRaw !== "" && isFinite(Number(feeRaw)) ? Math.max(0, Number(feeRaw)) : x.shippingFee });
                 });
-                x.cities = cities;
-                x.cityFees = fees;
+                x.districts = out;
               })
             }
           />

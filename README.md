@@ -1,4 +1,4 @@
-# Bibaz (بيبز) — Cheesecake Store
+# Bibaz (بيباز) — Cheesecake Store
 
 Arabic-first (RTL) e-commerce store for a Saudi cheesecake brand. English (LTR) is a toggle.
 Four sizes per cake (15 / 20 / 25 / 30 cm), 3D cake, dripping-cream effects, full admin panel,
