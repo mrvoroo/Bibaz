@@ -43,7 +43,7 @@ export default function CheckoutPage() {
   }, [options.map((o) => o.id).join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
   const pay = options.find((o) => o.id === payId);
 
-  const [f, setF] = useState({ name: "", phone: "", district: "", address: "", date: "", time: SLOTS[0], notes: "" });
+  const [f, setF] = useState({ name: "", phone: "", district: "", street: "", building: "", landmark: "", address: "", date: "", time: SLOTS[0], notes: "" });
   const [gift, setGift] = useState({ on: false, name: "", phone: "", msg: "" });
   const result = useCartResult({ cod: pay?.type === "cod", district: f.district });
   const minDate = useMemo(() => dateStr(new Date(Date.now() + settings.prepHours * 3600_000)), [settings.prepHours]);
@@ -84,7 +84,8 @@ export default function CheckoutPage() {
     if (f.name.trim().length < 2) er.name = t("required");
     if (!phoneOk(f.phone)) er.phone = t("bad_phone");
     if (!f.district) er.district = t("required");
-    if (f.address.trim().length < 6) er.address = t("required");
+    if (f.street.trim().length < 2) er.street = t("required");
+    if (!f.building.trim()) er.building = t("required");
     if (!f.date || f.date < minDate) er.date = t("date_min", { d: minDate });
     if (gift.on && gift.name.trim().length < 2) er.gname = t("required");
     if (gift.on && !phoneOk(gift.phone)) er.gphone = t("bad_phone");
@@ -92,7 +93,7 @@ export default function CheckoutPage() {
     if (!pay) er.pay = t("no_payment");
     setErrs(er);
     if (Object.keys(er).length || !pay) {
-      const order = ["name", "phone", "district", "date", "address", "gname", "gphone"];
+      const order = ["name", "phone", "district", "date", "street", "building", "gname", "gphone"];
       const first = order.find((k) => er[k]);
       const el = first ? document.getElementById(first === "gname" ? "g-name" : first === "gphone" ? "g-phone" : `f-${first}`) : null;
       if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); (el as HTMLElement).focus({ preventScroll: true }); }
@@ -109,7 +110,7 @@ export default function CheckoutPage() {
         name: f.name.trim().slice(0, 80),
         phone: f.phone.replace(/[\s-]/g, "").slice(0, 16),
         city: `الرياض - ${f.district}`.slice(0, 60),
-        address: f.address.trim().slice(0, 300),
+        address: clean([f.street, `${lang === "ar" ? "مبنى/فيلا" : "Bldg"} ${f.building}`, f.landmark, f.address].map((x) => x.trim()).filter(Boolean).join("، "), 300),
         date: f.date,
         time: f.time,
         map: loc || undefined,
@@ -192,11 +193,19 @@ export default function CheckoutPage() {
               </div>
               {field("date", t("deliver_date"), { type: "date", min: minDate })}
             </div>
-            <div>
-              <label htmlFor="f-address" className="mb-1 block text-sm font-bold">{t("address")}</label>
-              <textarea id="f-address" className="input" value={f.address} onChange={set("address")} aria-invalid={!!errs.address} aria-describedby={errs.address ? "e-address" : undefined} maxLength={300} autoComplete="street-address" />
-              {errs.address && <p id="e-address" className="mt-1 text-sm font-bold text-red-600">{errs.address}</p>}
-              <div className="mt-2 flex flex-wrap items-center gap-3">
+            <fieldset className="space-y-3 rounded-2xl border-2 border-dashed border-berry/40 bg-blush/30 p-4">
+              <legend className="px-2 text-lg font-extrabold text-berry-deep">📍 {t("delivery_address")}</legend>
+              <p className="text-sm text-muted">{t("address_hint")}</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {field("street", t("street"), { autoComplete: "address-line1", maxLength: 80 })}
+                {field("building", t("building"), { autoComplete: "address-line2", maxLength: 30 })}
+              </div>
+              {field("landmark", t("landmark"), { maxLength: 100 })}
+              <div>
+                <label htmlFor="f-address" className="mb-1 block text-sm font-bold">{t("address_more")}</label>
+                <textarea id="f-address" className="input" value={f.address} onChange={set("address")} maxLength={200} />
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
                 <button type="button" className="btn btn-ghost !min-h-10 text-sm" onClick={getLocation} disabled={locState === "busy"}>
                   📍 {t("share_location")}
                 </button>
@@ -204,7 +213,7 @@ export default function CheckoutPage() {
                   {locState === "ok" ? t("location_added") : locState === "fail" ? t("location_fail") : ""}
                 </span>
               </div>
-            </div>
+            </fieldset>
             <div className="rounded-2xl bg-cream p-3">
               <label className="flex cursor-pointer items-center gap-3 font-bold">
                 <input type="checkbox" className="h-5 w-5 accent-[#c8325e]" checked={gift.on} onChange={(e) => setGift((g) => ({ ...g, on: e.target.checked }))} />
