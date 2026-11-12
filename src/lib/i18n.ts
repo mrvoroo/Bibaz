@@ -1,0 +1,136 @@
+import type { L10n, Lang } from "./types";
+
+type Dict = Record<string, L10n>;
+
+const d: Dict = {
+  home: { ar: "الرئيسية", en: "Home" },
+  shop: { ar: "المتجر", en: "Shop" },
+  cart: { ar: "السلة", en: "Cart" },
+  offers: { ar: "العروض", en: "Offers" },
+  admin: { ar: "لوحة التحكم", en: "Admin" },
+  lang_switch: { ar: "English", en: "عربي" },
+  shop_now: { ar: "اطلب الآن", en: "Order now" },
+  see_all: { ar: "شاهد كل الكيكات", en: "See all cakes" },
+  from: { ar: "تبدأ من", en: "From" },
+  sar: { ar: "ر.س", en: "SAR" },
+  add_to_cart: { ar: "أضف للسلة", en: "Add to cart" },
+  added: { ar: "تمت الإضافة", en: "Added" },
+  choose_size: { ar: "اختر المقاس", en: "Choose size" },
+  serves: { ar: "يكفي", en: "Serves" },
+  people: { ar: "أشخاص", en: "people" },
+  cm: { ar: "سم", en: "cm" },
+  sold_out: { ar: "نفدت الكمية", en: "Sold out" },
+  qty: { ar: "الكمية", en: "Quantity" },
+  extras: { ar: "إضافات اختيارية", en: "Optional extras" },
+  cake_text: { ar: "النص على الكيكة", en: "Text on the cake" },
+  cake_text_ph: { ar: "مثال: كل عام وأنتِ بخير", en: "e.g. Happy birthday Sara" },
+  subtotal: { ar: "المجموع الفرعي", en: "Subtotal" },
+  extras_total: { ar: "الإضافات", en: "Extras" },
+  discount: { ar: "الخصم", en: "Discount" },
+  shipping: { ar: "التوصيل", en: "Delivery" },
+  free: { ar: "مجاني", en: "Free" },
+  total: { ar: "الإجمالي", en: "Total" },
+  checkout: { ar: "إتمام الطلب", en: "Checkout" },
+  empty_cart: { ar: "سلتك فارغة", en: "Your cart is empty" },
+  empty_cart_sub: { ar: "اختر كيكتك المفضلة وابدأ", en: "Pick your favourite cake to start" },
+  coupon: { ar: "كود الخصم", en: "Discount code" },
+  apply: { ar: "تطبيق", en: "Apply" },
+  coupon_ok: { ar: "تم تطبيق الكود", en: "Code applied" },
+  coupon_bad: { ar: "الكود غير صالح", en: "Invalid code" },
+  free_ship_gap: { ar: "أضف {n} للحصول على توصيل مجاني", en: "Add {n} more for free delivery" },
+  free_ship_ok: { ar: "حصلت على توصيل مجاني 🎉", en: "You get free delivery 🎉" },
+  upgrade: { ar: "ارفع المقاس إلى {cm} سم بفرق {n} فقط", en: "Upgrade to {cm} cm for only {n} more" },
+  upgrade_btn: { ar: "ترقية", en: "Upgrade" },
+  you_may_like: { ar: "قد يعجبك أيضًا", en: "You may also like" },
+  add: { ar: "إضافة", en: "Add" },
+  remove: { ar: "حذف", en: "Remove" },
+  all: { ar: "الكل", en: "All" },
+  filter_flavor: { ar: "النكهة", en: "Flavour" },
+  details: { ar: "التفاصيل", en: "Details" },
+  back: { ar: "رجوع", en: "Back" },
+  hero_title_1: { ar: "تشيز كيك", en: "Cheesecake" },
+  hero_title_2: { ar: "يذوب في الفم", en: "that melts in your mouth" },
+  hero_sub: {
+    ar: "أربعة مقاسات لكل مناسبة، تُحضَّر طازجة لك وتصل إلى باب بيتك.",
+    en: "Four sizes for every occasion, baked fresh for you and delivered to your door.",
+  },
+  best_sellers: { ar: "الأكثر طلبًا", en: "Best sellers" },
+  sizes_title: { ar: "أربعة مقاسات، كلٌّ لمناسبته", en: "Four sizes, one for every occasion" },
+  sizes_sub: { ar: "من جلسة هادئة إلى حفلة كبيرة", en: "From a quiet treat to a big party" },
+  how_title: { ar: "كيف تطلب؟", en: "How it works" },
+  how1: { ar: "اختر الكيكة والمقاس", en: "Pick your cake & size" },
+  how1d: { ar: "تصفح النكهات وأضف ما يعجبك للسلة.", en: "Browse flavours and add your favourites." },
+  how2: { ar: "حوّل المبلغ", en: "Transfer the amount" },
+  how2d: { ar: "ادفع بالتحويل البنكي وأرسل الإيصال.", en: "Pay by bank transfer and send the receipt." },
+  how3: { ar: "استلم طازجة", en: "Receive it fresh" },
+  how3d: { ar: "نحضّرها ونوصّلها في الموعد المحدد.", en: "We bake it and deliver at your chosen time." },
+  promise1: { ar: "تُحضَّر عند الطلب", en: "Baked to order" },
+  promise2: { ar: "مكوّنات فاخرة", en: "Premium ingredients" },
+  promise3: { ar: "توصيل مبرّد", en: "Chilled delivery" },
+  footer_note: { ar: "الأسعار شاملة ضريبة القيمة المضافة.", en: "Prices include VAT." },
+  follow: { ar: "تابعنا", en: "Follow us" },
+  whatsapp: { ar: "واتساب", en: "WhatsApp" },
+  // checkout
+  your_details: { ar: "بياناتك", en: "Your details" },
+  full_name: { ar: "الاسم الكامل", en: "Full name" },
+  phone: { ar: "رقم الجوال", en: "Mobile number" },
+  city: { ar: "المدينة", en: "City" },
+  address: { ar: "العنوان بالتفصيل", en: "Detailed address" },
+  deliver_date: { ar: "تاريخ التسليم", en: "Delivery date" },
+  deliver_time: { ar: "وقت التسليم", en: "Delivery time" },
+  notes: { ar: "ملاحظات (اختياري)", en: "Notes (optional)" },
+  payment: { ar: "طريقة الدفع", en: "Payment method" },
+  pay_transfer: { ar: "تحويل", en: "Transfer" },
+  pay_cod: { ar: "الدفع عند الاستلام", en: "Cash on delivery" },
+  transfer_how: {
+    ar: "بعد تأكيد الطلب ستظهر لك بيانات الحساب. حوّل المبلغ ثم أرسل الإيصال عبر واتساب.",
+    en: "After confirming you will see the account details. Transfer the total, then send the receipt on WhatsApp.",
+  },
+  place_order: { ar: "تأكيد الطلب", en: "Place order" },
+  order_summary: { ar: "ملخص الطلب", en: "Order summary" },
+  required: { ar: "هذا الحقل مطلوب", en: "This field is required" },
+  bad_phone: { ar: "أدخل رقم جوال سعودي صحيح (05XXXXXXXX)", en: "Enter a valid Saudi mobile (05XXXXXXXX)" },
+  min_order: { ar: "الحد الأدنى للطلب {n}", en: "Minimum order is {n}" },
+  no_payment: { ar: "لا توجد طرق دفع متاحة حاليًا", en: "No payment methods available right now" },
+  // order success
+  order_received: { ar: "تم استلام طلبك", en: "Order received" },
+  order_no: { ar: "رقم الطلب", en: "Order number" },
+  pay_now: { ar: "الخطوة التالية: حوّل المبلغ", en: "Next step: transfer the amount" },
+  amount_due: { ar: "المبلغ المطلوب", en: "Amount due" },
+  account_name: { ar: "اسم الحساب", en: "Account name" },
+  iban: { ar: "رقم الآيبان", en: "IBAN" },
+  account_no: { ar: "رقم الحساب / الجوال", en: "Account / mobile no." },
+  copy: { ar: "نسخ", en: "Copy" },
+  copied: { ar: "تم النسخ", en: "Copied" },
+  send_receipt: { ar: "أرسل الطلب والإيصال عبر واتساب", en: "Send order & receipt on WhatsApp" },
+  receipt_hint: {
+    ar: "لن يُؤكَّد الطلب إلا بعد استلام إيصال التحويل.",
+    en: "Your order is confirmed once we receive the transfer receipt.",
+  },
+  cod_note: { ar: "ستدفع عند الاستلام. سنتواصل معك لتأكيد الطلب.", en: "You will pay on delivery. We will contact you to confirm." },
+  continue_shopping: { ar: "متابعة التسوق", en: "Continue shopping" },
+  not_found: { ar: "الصفحة غير موجودة", en: "Page not found" },
+  loading: { ar: "جارٍ التحميل…", en: "Loading…" },
+  offer_badge: { ar: "عرض", en: "Offer" },
+  ends_in: { ar: "ينتهي خلال", en: "Ends in" },
+  vat_inc: { ar: "شامل الضريبة", en: "incl. VAT" },
+  open_cart: { ar: "فتح السلة", en: "Open cart" },
+  close: { ar: "إغلاق", en: "Close" },
+  menu: { ar: "القائمة", en: "Menu" },
+  gift_free: { ar: "هدية مجانية", en: "Free gift" },
+};
+
+export type TKey = keyof typeof d;
+
+export function t(key: TKey, lang: Lang, vars?: Record<string, string | number>): string {
+  let s = d[key]?.[lang] ?? String(key);
+  if (vars) for (const k of Object.keys(vars)) s = s.replace(`{${k}}`, String(vars[k]));
+  return s;
+}
+
+export const tx = (l: L10n | undefined, lang: Lang) => (l ? l[lang] || l.ar || l.en : "");
+
+export function money(n: number, lang: Lang): string {
+  const v = Number.isInteger(n) ? String(n) : n.toFixed(2);
+  return lang === "ar" ? `${v} ر.س` : `SAR ${v}`;
+}
