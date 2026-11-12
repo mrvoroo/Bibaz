@@ -34,6 +34,10 @@ export interface Product {
   featured: boolean;
   active: boolean;
   sort: number;
+  ingredients?: L10n;
+  allergens?: L10n;
+  storage?: L10n;
+  occasions?: string[];
 }
 
 export interface Addon {
@@ -117,6 +121,10 @@ export interface Settings {
   cod: { enabled: boolean; fee: number };
   sizeUpgradeNudge: boolean;
   adminPassHash: string;
+  cityFees: Record<string, number>; // per-city delivery fee override
+  about: L10n;
+  policies: L10n; // multi-line text shown on /policies
+  testimonials: { name: string; text: L10n }[]; // only real reviews; hidden if empty
 }
 
 export interface StoreData {

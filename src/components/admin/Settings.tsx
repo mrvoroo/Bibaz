@@ -93,9 +93,47 @@ export function SettingsTab() {
           <Field label={L("الحد الأدنى للطلب", "Minimum order")}><NInput value={s.minOrder} onChange={(v) => set((x) => (x.minOrder = v))} /></Field>
           <Field label={L("ساعات التحضير المسبقة", "Prep lead time (hours)")}><NInput value={s.prepHours} onChange={(v) => set((x) => (x.prepHours = v))} /></Field>
         </div>
-        <Field label={L("المدن (مدينة في كل سطر)", "Cities (one per line)")} className="mt-4">
-          <textarea className="input" value={s.cities.join("\n")} onChange={(e) => set((x) => (x.cities = e.target.value.split("\n").map((c) => c.trim()).filter(Boolean)))} />
+        <Field label={L("المدن ورسوم التوصيل (سطر لكل مدينة: المدينة=الرسم)", "Cities & delivery fee (one per line: City=fee)")} hint={L("مثال: الرياض=25 . بدون رقم = الرسم العام.", "e.g. Riyadh=25 . No number = default fee.")} className="mt-4">
+          <textarea
+            className="input"
+            dir="auto"
+            defaultValue={s.cities.map((c) => (s.cityFees?.[c] !== undefined ? `${c}=${s.cityFees[c]}` : c)).join("\n")}
+            onBlur={(e) =>
+              set((x) => {
+                const cities: string[] = [];
+                const fees: Record<string, number> = {};
+                e.target.value.split("\n").forEach((raw) => {
+                  const [name, fee] = raw.split("=").map((p) => p.trim());
+                  if (!name) return;
+                  cities.push(name);
+                  if (fee !== undefined && fee !== "" && isFinite(Number(fee))) fees[name] = Math.max(0, Number(fee));
+                });
+                x.cities = cities;
+                x.cityFees = fees;
+              })
+            }
+          />
         </Field>
+      </Panel>
+
+      <Panel title={L("الثقة والمحتوى", "Trust & content")}>
+        <div className="space-y-4">
+          <L10nInput label={L("من نحن (يظهر في الرئيسية)", "About us (home page)")} multiline value={s.about} onChange={(v) => set((x) => (x.about = v))} />
+          <L10nInput label={L("السياسات (سطر لكل بند، الصيغة: العنوان: النص)", "Policies (one per line, Title: text)")} multiline value={s.policies} onChange={(v) => set((x) => (x.policies = v))} />
+          <div>
+            <span className="mb-2 block text-sm font-bold">{L("آراء العملاء (أضف آراء حقيقية فقط، وتختفي لو فاضية)", "Customer reviews (real ones only; hidden when empty)")}</span>
+            <div className="space-y-3">
+              {s.testimonials.map((r, i) => (
+                <div key={i} className="space-y-2 rounded-2xl bg-cream p-3">
+                  <Field label={L("اسم العميل", "Customer name")}><TInput value={r.name} onChange={(v) => set((x) => (x.testimonials[i].name = v))} /></Field>
+                  <L10nInput label={L("الرأي", "Review")} value={r.text} multiline onChange={(v) => set((x) => (x.testimonials[i].text = v))} />
+                  <button type="button" className="btn btn-ghost !min-h-10 text-sm text-red-600" onClick={() => set((x) => (x.testimonials = x.testimonials.filter((_, k) => k !== i)))}>{L("حذف", "Delete")}</button>
+                </div>
+              ))}
+              <button type="button" className="btn btn-ghost !min-h-10 text-sm" onClick={() => set((x) => x.testimonials.push({ name: "", text: { ar: "", en: "" } }))}>+ {L("رأي", "Review")}</button>
+            </div>
+          </div>
+        </div>
       </Panel>
 
       <Panel title={L("كلمة مرور لوحة التحكم", "Admin passcode")}>

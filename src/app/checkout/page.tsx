@@ -40,10 +40,10 @@ export default function CheckoutPage() {
   }, [options.map((o) => o.id).join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
   const pay = options.find((o) => o.id === payId);
 
-  const result = useCartResult({ cod: pay?.type === "cod" });
-  const minDate = useMemo(() => dateStr(new Date(Date.now() + settings.prepHours * 3600_000)), [settings.prepHours]);
-
   const [f, setF] = useState({ name: "", phone: "", city: settings.cities[0] ?? "", address: "", date: "", time: SLOTS[0], notes: "" });
+  const [gift, setGift] = useState({ on: false, name: "", phone: "", msg: "" });
+  const result = useCartResult({ cod: pay?.type === "cod", city: f.city });
+  const minDate = useMemo(() => dateStr(new Date(Date.now() + settings.prepHours * 3600_000)), [settings.prepHours]);
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -68,11 +68,19 @@ export default function CheckoutPage() {
     if (!phoneOk(f.phone)) er.phone = t("bad_phone");
     if (!f.city.trim()) er.city = t("required");
     if (f.address.trim().length < 6) er.address = t("required");
-    if (!f.date || f.date < minDate) er.date = t("required");
+    if (!f.date || f.date < minDate) er.date = t("date_min", { d: minDate });
+    if (gift.on && gift.name.trim().length < 2) er.gname = t("required");
+    if (gift.on && !phoneOk(gift.phone)) er.gphone = t("bad_phone");
     if (settings.minOrder > 0 && result.subtotal < settings.minOrder) er.min = t("min_order", { n: money(settings.minOrder) });
     if (!pay) er.pay = t("no_payment");
     setErrs(er);
-    if (Object.keys(er).length || !pay) return;
+    if (Object.keys(er).length || !pay) {
+      const order = ["name", "phone", "city", "date", "address", "gname", "gphone"];
+      const first = order.find((k) => er[k]);
+      const el = first ? document.getElementById(first === "gname" ? "g-name" : first === "gphone" ? "g-phone" : `f-${first}`) : null;
+      if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); (el as HTMLElement).focus({ preventScroll: true }); }
+      return;
+    }
     setBusy(true);
 
     const order: Order = {
@@ -87,7 +95,10 @@ export default function CheckoutPage() {
         address: f.address.trim().slice(0, 300),
         date: f.date,
         time: f.time,
-        notes: f.notes.trim().slice(0, 300),
+        notes: [
+          gift.on ? `🎁 هدية إلى ${gift.name.trim().slice(0, 60)} (${gift.phone.replace(/[\s-]/g, "").slice(0, 16)})${gift.msg.trim() ? ` «${gift.msg.trim().slice(0, 120)}»` : ""} - بدون ذكر الأسعار` : "",
+          f.notes.trim(),
+        ].filter(Boolean).join(" | ").slice(0, 300),
       },
       lines: result.lines.map((l) => ({
         name: l.product.name.ar,
@@ -129,9 +140,14 @@ export default function CheckoutPage() {
 
   return (
     <Shell>
-      <form onSubmit={submit} noValidate className="container-x grid gap-8 py-8 md:grid-cols-[1.3fr_1fr] md:py-12">
+      <form id="checkout-form" onSubmit={submit} noValidate className="container-x grid gap-8 py-8 pb-28 md:grid-cols-[1.3fr_1fr] md:py-12 md:pb-12">
         <div className="space-y-6">
           <h1 className="text-4xl font-bold text-choco">{t("checkout")}</h1>
+          {Object.keys(errs).length > 0 && (
+            <div role="alert" className="rounded-2xl border border-red-300 bg-red-50 p-3 text-sm font-bold text-red-700">
+              {t("fix_errors")}
+            </div>
+          )}
 
           <section className="card space-y-4 p-5 md:p-6">
             <h2 className="text-xl font-bold">{t("your_details")}</h2>
@@ -140,18 +156,46 @@ export default function CheckoutPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="f-city" className="mb-1 block text-sm font-bold">{t("city")}</label>
-                <select id="f-city" className="input" value={f.city} onChange={set("city")}>
+                <select id="f-city" className="input" value={f.city} onChange={set("city")} aria-describedby="city-fee">
                   {settings.cities.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>
+                <p id="city-fee" className="mt-1 text-xs text-muted">
+                  {t("delivery_fee_city")}: <b>{money(settings.cityFees?.[f.city] ?? settings.shippingFee)}</b>
+                </p>
               </div>
               {field("date", t("deliver_date"), { type: "date", min: minDate })}
             </div>
             <div>
               <label htmlFor="f-address" className="mb-1 block text-sm font-bold">{t("address")}</label>
-              <textarea id="f-address" className="input" value={f.address} onChange={set("address")} aria-invalid={!!errs.address} maxLength={300} autoComplete="street-address" />
-              {errs.address && <p className="mt-1 text-sm font-bold text-red-600">{errs.address}</p>}
+              <textarea id="f-address" className="input" value={f.address} onChange={set("address")} aria-invalid={!!errs.address} aria-describedby={errs.address ? "e-address" : undefined} maxLength={300} autoComplete="street-address" />
+              {errs.address && <p id="e-address" className="mt-1 text-sm font-bold text-red-600">{errs.address}</p>}
+            </div>
+            <div className="rounded-2xl bg-cream p-3">
+              <label className="flex cursor-pointer items-center gap-3 font-bold">
+                <input type="checkbox" className="h-5 w-5 accent-[#c8325e]" checked={gift.on} onChange={(e) => setGift((g) => ({ ...g, on: e.target.checked }))} />
+                🎁 {t("gift_toggle")}
+              </label>
+              {gift.on && (
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="g-name" className="mb-1 block text-sm font-bold">{t("gift_name")}</label>
+                    <input id="g-name" className="input" value={gift.name} maxLength={60} onChange={(e) => setGift((g) => ({ ...g, name: e.target.value }))} aria-invalid={!!errs.gname} />
+                    {errs.gname && <p className="mt-1 text-sm font-bold text-red-600">{errs.gname}</p>}
+                  </div>
+                  <div>
+                    <label htmlFor="g-phone" className="mb-1 block text-sm font-bold">{t("gift_phone")}</label>
+                    <input id="g-phone" className="input" dir="ltr" inputMode="tel" placeholder="05XXXXXXXX" value={gift.phone} maxLength={16} onChange={(e) => setGift((g) => ({ ...g, phone: e.target.value }))} aria-invalid={!!errs.gphone} />
+                    {errs.gphone && <p className="mt-1 text-sm font-bold text-red-600">{errs.gphone}</p>}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="g-msg" className="mb-1 block text-sm font-bold">{t("gift_msg")}</label>
+                    <textarea id="g-msg" className="input" maxLength={120} value={gift.msg} onChange={(e) => setGift((g) => ({ ...g, msg: e.target.value }))} />
+                    <p className="mt-1 text-xs text-muted">{t("gift_hide")}</p>
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <label htmlFor="f-time" className="mb-1 block text-sm font-bold">{t("deliver_time")}</label>
@@ -187,7 +231,8 @@ export default function CheckoutPage() {
                 ))}
               </div>
             )}
-            <p className="text-sm text-muted">{pay?.type === "cod" ? t("cod_note") : t("transfer_how")}</p>
+            <p className="text-sm text-muted">{pay?.type === "cod" ? t("cod_note") : `${t("pay_secure")} ${t("transfer_how")}`}</p>
+            <Link href="/policies/" className="text-sm font-bold text-berry underline" target="_blank">{t("policies")}</Link>
             {errs.pay && <p className="text-sm font-bold text-red-600">{errs.pay}</p>}
           </section>
         </div>
@@ -218,6 +263,11 @@ export default function CheckoutPage() {
             </button>
           </section>
           <UpsellBlock placement="checkout" contextProductIds={lines.map((l) => l.productId)} />
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur md:hidden">
+            <button type="submit" form="checkout-form" disabled={busy || !pay} className="btn btn-primary w-full !min-h-12">
+              {t("place_order")} · {money(result.total)}
+            </button>
+          </div>
           <p className="text-center text-xs text-muted">{lang === "ar" ? "🔒 بياناتك تُستخدم فقط لإتمام طلبك" : "🔒 Your details are only used to fulfil your order"}</p>
         </aside>
       </form>

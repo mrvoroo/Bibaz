@@ -94,4 +94,14 @@ export const FLAVORS: Record<FlavorKey, FlavorTheme> = {
   },
 };
 
-export const FLAVOR_KEYS = Object.keys(FLAVORS) as FlavorKey[];
+export const OCCASIONS: { key: string; label: L10n; icon: string }[] = [
+  { key: "birthday", label: { ar: "عيد ميلاد", en: "Birthday" }, icon: "🎂" },
+  { key: "graduation", label: { ar: "تخرج", en: "Graduation" }, icon: "🎓" },
+  { key: "newborn", label: { ar: "مولود جديد", en: "New baby" }, icon: "🍼" },
+  { key: "eid", label: { ar: "العيد ورمضان", en: "Eid & Ramadan" }, icon: "🌙" },
+  { key: "mothers", label: { ar: "عيد الأم", en: "Mother's Day" }, icon: "💐" },
+  { key: "national", label: { ar: "اليوم الوطني", en: "National Day" }, icon: "🇸🇦" },
+  { key: "gift", label: { ar: "هدية", en: "Gift" }, icon: "🎁" },
+];
+
+export const FLAVOR_KEYS =Object.keys(FLAVORS) as FlavorKey[];

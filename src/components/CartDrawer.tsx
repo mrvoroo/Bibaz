@@ -7,7 +7,7 @@ import { useCart, useDb, useT } from "@/lib/store";
 import { useCartResult } from "./../lib/hooks";
 import { ProductArt } from "./ProductArt";
 import { UpsellBlock } from "./UpsellBlock";
-import type { CartResult } from "@/lib/engine";
+import { isOfferLive, type CartResult } from "@/lib/engine";
 import type { SizeCm } from "@/lib/types";
 
 export function FreeShipBar({ result }: { result: CartResult }) {
@@ -39,6 +39,8 @@ export function CouponBox() {
   const coupon = useCart((s) => s.coupon);
   const setCoupon = useCart((s) => s.setCoupon);
   const result = useCartResult();
+  const offers = useDb((s) => s.data.offers);
+  const hint = offers.find((o) => o.code && o.showBadge && isOfferLive(o));
   const [v, setV] = useState(coupon);
   return (
     <div>
@@ -65,6 +67,11 @@ export function CouponBox() {
           {t("apply")}
         </button>
       </div>
+      {hint && result.couponState !== "valid" && (
+        <button type="button" className="mt-1 text-xs font-bold text-berry underline" onClick={() => { setV(hint.code!); setCoupon(hint.code!); }}>
+          {t("coupon_try")}: {hint.code}
+        </button>
+      )}
       <div role="status" aria-live="polite">
         {result.couponState === "valid" && <p className="mt-1 text-sm font-bold text-green-700">✓ {t("coupon_ok")}</p>}
         {result.couponState === "invalid" && <p className="mt-1 text-sm font-bold text-red-600">{t("coupon_bad")}</p>}

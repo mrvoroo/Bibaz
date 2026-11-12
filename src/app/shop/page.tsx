@@ -5,7 +5,7 @@ import { Shell } from "@/components/Shell";
 import { ProductCard } from "@/components/ProductCard";
 import { Drip } from "@/components/Drip";
 import { useDb, useT } from "@/lib/store";
-import { FLAVORS } from "@/lib/flavors";
+import { FLAVORS, OCCASIONS } from "@/lib/flavors";
 import { isOfferLive } from "@/lib/engine";
 import type { FlavorKey } from "@/lib/types";
 
@@ -15,7 +15,11 @@ export default function ShopPage() {
   const [filter, setFilter] = useState<FlavorKey | "all">("all");
   const products = useMemo(() => data.products.filter((p) => p.active).sort((a, b) => a.sort - b.sort), [data.products]);
   const flavors = Array.from(new Set(products.map((p) => p.flavor)));
-  const shown = filter === "all" ? products : products.filter((p) => p.flavor === filter);
+  const [occ, setOcc] = useState<string>("all");
+  const occasions = OCCASIONS.filter((o) => products.some((p) => p.occasions?.includes(o.key)));
+  const shown = products
+    .filter((p) => filter === "all" || p.flavor === filter)
+    .filter((p) => occ === "all" || p.occasions?.includes(occ));
   const offers = data.offers.filter((o) => isOfferLive(o) && o.showBadge && !o.code);
 
   return (
@@ -47,6 +51,21 @@ export default function ShopPage() {
               </button>
             ))}
           </div>
+          {occasions.length > 0 && (
+            <div className="thin-scroll -mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-2" role="group" aria-label={t("occasion")}>
+              {[{ key: "all", label: { ar: "كل المناسبات", en: "All occasions" }, icon: "✨" }, ...occasions].map((o) => (
+                <button
+                  key={o.key}
+                  type="button"
+                  aria-pressed={occ === o.key}
+                  onClick={() => setOcc(o.key)}
+                  className={`shrink-0 rounded-full border px-4 py-2 text-sm font-bold transition ${occ === o.key ? "border-choco bg-choco text-cream" : "border-line bg-white hover:border-choco"}`}
+                >
+                  {o.icon} {o.label[lang]}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <Drip fill="#fbdfe3" height={90} className="absolute inset-x-0 top-full -mt-1" />
       </section>

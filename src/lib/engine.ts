@@ -61,7 +61,7 @@ export function computeCart(
   offers: Offer[],
   settings: Settings,
   coupon: string,
-  opts: { cod?: boolean; now?: Date } = {},
+  opts: { cod?: boolean; now?: Date; city?: string } = {},
 ): CartResult {
   const now = opts.now ?? new Date();
   const lines: PricedLine[] = [];
@@ -183,7 +183,8 @@ export function computeCart(
   }
 
   const discount = round(lines.reduce((s, l) => s + l.discount, 0));
-  let shipping = settings.shippingFee;
+  let shipping = (opts.city && settings.cityFees?.[opts.city]) ?? settings.shippingFee;
+  if (typeof shipping !== "number") shipping = settings.shippingFee;
   const threshold = settings.freeShippingOver;
   if (shippingFree || (threshold > 0 && subtotal - discount >= threshold)) shipping = 0;
   if (!lines.length) shipping = 0;

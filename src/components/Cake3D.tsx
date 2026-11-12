@@ -165,14 +165,17 @@ export default function Cake3D({
   cm = 20,
   interactive = true,
   reduceMotion = false,
+  paused = false,
 }: {
   flavor: FlavorKey;
   cm?: number;
   interactive?: boolean;
   reduceMotion?: boolean;
+  paused?: boolean;
 }) {
   return (
     <Canvas
+      frameloop={paused ? "never" : "always"}
       dpr={[1, 1.5]}
       camera={{ position: [0, 2.0, 4.6], fov: 34 }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}

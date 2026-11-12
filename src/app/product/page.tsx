@@ -208,9 +208,10 @@ function ProductView() {
                 })}
               </div>
               {needsText && (
-                <div className="mt-3">
+                <div className="mt-3" aria-live="polite">
                   <label htmlFor="cake-text" className="mb-1 block text-sm font-bold">{t("cake_text")}</label>
-                  <input id="cake-text" className="input" maxLength={40} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("cake_text_ph")} />
+                  <input id="cake-text" className="input" maxLength={40} value={text} onChange={(e) => setText(e.target.value)} placeholder={t("cake_text_ph")} aria-invalid={textMissing} />
+                  {textMissing && <p className="mt-1 text-sm font-bold text-berry">{t("engraving_needed")}</p>}
                 </div>
               )}
             </fieldset>
@@ -248,6 +249,26 @@ function ProductView() {
           </button>
         </div>
       </div>
+
+      <section className="mt-10 grid gap-3 md:grid-cols-3" aria-label={t("details")}>
+        {([
+          ["ingredients", "🧁", product.ingredients],
+          ["allergens", "⚠️", product.allergens],
+          ["storage", "❄️", product.storage],
+        ] as const).map(([k, icon, val]) =>
+          val && tx(val) ? (
+            <div key={k} className="card p-4">
+              <h3 className="mb-1 flex items-center gap-2 text-lg font-bold"><span aria-hidden>{icon}</span>{t(k)}</h3>
+              <p className="text-sm text-muted">{tx(val)}</p>
+            </div>
+          ) : null,
+        )}
+        <p className="text-sm text-muted md:col-span-3">
+          🚚 {t("delivery_fee_city")}: {Object.entries(data.settings.cityFees ?? {}).slice(0, 6).map(([c, f]) => `${c} ${money(f)}`).join(" · ") || money(data.settings.shippingFee)}
+          {" · "}
+          <Link href="/policies/" className="font-bold text-berry underline">{t("policies")}</Link>
+        </p>
+      </section>
 
       <section className="pt-16">
         <h2 className="mb-6 text-3xl font-bold">{t("you_may_like")}</h2>

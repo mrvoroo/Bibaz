@@ -32,6 +32,20 @@ function prod(
     featured: i <= 4,
     active: true,
     sort: i,
+    // SAMPLE details: the owner must confirm real ingredients/allergens/storage in Admin > Products
+    ingredients: {
+      ar: "جبنة كريمية، كريمة طازجة، بيض، سكر، زبدة، بسكويت.",
+      en: "Cream cheese, fresh cream, eggs, sugar, butter, biscuit base.",
+    },
+    allergens: {
+      ar: "يحتوي على: ألبان، بيض، غلوتين. قد يحتوي على آثار مكسرات.",
+      en: "Contains: dairy, eggs, gluten. May contain traces of nuts.",
+    },
+    storage: {
+      ar: "تُحفظ مبرّدة وتُقدَّم باردة. يُفضّل تناولها خلال 3 أيام.",
+      en: "Keep refrigerated and serve chilled. Best within 3 days.",
+    },
+    occasions: ["birthday", "gift"],
     ...extra,
   };
 }
@@ -196,7 +210,7 @@ export const SEED: StoreData = {
       productIds: [],
       sizes: [],
       percent: 10,
-      showBadge: false,
+      showBadge: true,
     },
     {
       id: "o-freeship",
@@ -311,6 +325,16 @@ export const SEED: StoreData = {
     ],
     cod: { enabled: false, fee: 0 },
     sizeUpgradeNudge: true,
+    cityFees: { "الرياض": 25, "جدة": 35, "الدمام": 35, "الخبر": 35, "مكة المكرمة": 40, "المدينة المنورة": 40 },
+    about: {
+      ar: "بيبز مطبخ متخصص في التشيز كيك. نحضّر كل كيكة عند الطلب بمكوّنات فاخرة ونوصّلها لك مبرّدة. (عدّل هذا النص من الإعدادات)",
+      en: "Bibaz is a kitchen dedicated to cheesecake. Every cake is baked to order with premium ingredients and delivered chilled. (Edit this text in Settings)",
+    },
+    policies: {
+      ar: "الدفع: بالتحويل البنكي أو المحفظة، ويُؤكَّد الطلب بعد استلام إيصال التحويل عبر واتساب.\nالتحضير: تُحضَّر الكيكات عند الطلب، يُرجى الطلب قبل 24 ساعة على الأقل.\nالتوصيل: مبرّد، ورسومه تختلف حسب المدينة وتظهر قبل تأكيد الطلب.\nالإلغاء والتعديل: يمكن الإلغاء أو التعديل قبل بدء التحضير بالتواصل معنا على واتساب.\nالاسترجاع: لأسباب صحية لا تُسترجع المنتجات الغذائية، وإن وصلتك كيكة بها مشكلة تواصل معنا خلال ساعتين من الاستلام مع صورة. (عدّل السياسة لتناسبك)",
+      en: "Payment: bank or wallet transfer; your order is confirmed once we receive the transfer receipt on WhatsApp.\nPreparation: cakes are baked to order, please order at least 24 hours ahead.\nDelivery: chilled; fees vary by city and are shown before you confirm.\nCancellation & changes: possible before preparation starts, contact us on WhatsApp.\nReturns: food items cannot be returned for health reasons; if there is a problem contact us within 2 hours of delivery with a photo. (Edit this policy to suit you)",
+    },
+    testimonials: [],
     adminPassHash: "c4d21fcfd647b31e5311968633945c00a670cc0303d5d8ccd7acd73e0d105b22",
   },
   orders: [],

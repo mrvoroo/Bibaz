@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { uid, useDb, useT } from "@/lib/store";
-import { FLAVORS, FLAVOR_KEYS } from "@/lib/flavors";
+import { FLAVORS, FLAVOR_KEYS, OCCASIONS } from "@/lib/flavors";
 import { SIZES, type Addon, type FlavorKey, type Product } from "@/lib/types";
 import { Badge, Field, L10nInput, NInput, Panel, TInput, Toggle, toggleIn, useL } from "./ui";
 import { ProductArt } from "@/components/ProductArt";
@@ -106,6 +106,21 @@ function ProductEditor({ id, onClose }: { id: string; onClose: () => void }) {
             </div>
             <p className="text-xs text-muted">{L("للنشر على GitHub يُفضّل رابط صورة (ملف داخل مجلد public) بدل الرفع المباشر.", "For publishing on GitHub prefer a URL / file in the public folder over direct upload.")}</p>
           </div>
+        </div>
+      </div>
+
+      <L10nInput label={L("المكوّنات", "Ingredients")} value={p.ingredients ?? { ar: "", en: "" }} multiline onChange={(v) => patch((t) => (t.ingredients = v))} />
+      <L10nInput label={L("مسببات الحساسية", "Allergens")} value={p.allergens ?? { ar: "", en: "" }} multiline onChange={(v) => patch((t) => (t.allergens = v))} />
+      <L10nInput label={L("الحفظ والتقديم", "Storage & serving")} value={p.storage ?? { ar: "", en: "" }} multiline onChange={(v) => patch((t) => (t.storage = v))} />
+      <div>
+        <span className="mb-2 block text-sm font-bold">{L("المناسبات", "Occasions")}</span>
+        <div className="flex flex-wrap gap-2">
+          {OCCASIONS.map((o) => (
+            <button key={o.key} type="button" aria-pressed={!!p.occasions?.includes(o.key)} onClick={() => patch((t) => (t.occasions = toggleIn(t.occasions ?? [], o.key)))}
+              className={`rounded-full border px-3 py-1 text-sm font-bold ${p.occasions?.includes(o.key) ? "border-berry bg-berry text-white" : "border-line bg-white"}`}>
+              {o.icon} {o.label.ar}
+            </button>
+          ))}
         </div>
       </div>
 

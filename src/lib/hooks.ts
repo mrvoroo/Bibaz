@@ -5,13 +5,13 @@ import { useCart, useDb } from "./store";
 import { computeCart, type CartResult } from "./engine";
 import type { Addon, Product, SizeCm, UpsellRule } from "./types";
 
-export function useCartResult(opts: { cod?: boolean } = {}): CartResult {
+export function useCartResult(opts: { cod?: boolean; city?: string } = {}): CartResult {
   const lines = useCart((s) => s.lines);
   const coupon = useCart((s) => s.coupon);
   const data = useDb((s) => s.data);
   return useMemo(
     () => computeCart(lines, data.products, data.addons, data.offers, data.settings, coupon, opts),
-    [lines, coupon, data, opts.cod], // eslint-disable-line react-hooks/exhaustive-deps
+    [lines, coupon, data, opts.cod, opts.city], // eslint-disable-line react-hooks/exhaustive-deps
   );
 }
 

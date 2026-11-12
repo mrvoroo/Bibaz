@@ -228,6 +228,27 @@ export default function HomePage() {
             </Reveal>
           ))}
         </ol>
+        <Reveal className="mt-16">
+          <div className="card mx-auto max-w-3xl p-6 text-center md:p-8">
+            <h2 className="mb-2 text-3xl font-bold text-choco">{t("about_title")}</h2>
+            <p className="text-lg text-muted">{tx(data.settings.about)}</p>
+          </div>
+        </Reveal>
+
+        {data.settings.testimonials.length > 0 && (
+          <Reveal className="mt-12">
+            <h2 className="mb-6 text-center text-3xl font-bold text-choco">{t("reviews_title")}</h2>
+            <ul className="grid gap-4 md:grid-cols-3">
+              {data.settings.testimonials.slice(0, 6).map((r, i) => (
+                <li key={i} className="card p-5">
+                  <p className="mb-3 text-muted">“{tx(r.text)}”</p>
+                  <p className="font-bold text-berry-deep">— {r.name}</p>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        )}
+
         <Reveal className="mt-12 text-center">
           <Link href="/shop/" className="btn btn-primary !min-h-14 text-lg">
             {t("shop_now")}

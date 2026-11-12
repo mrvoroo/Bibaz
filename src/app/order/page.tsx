@@ -14,7 +14,7 @@ function CopyRow({ label, value }: { label: string; value: string }) {
   const [ok, setOk] = useState(false);
   if (!value) return null;
   return (
-    <div className="flex items-center justify-between gap-3 rounded-2xl bg-cream p-3">
+    <div className="flex items-center justify-between gap-3 rounded-2xl bg-cream p-3" role="group" aria-label={label}>
       <div className="min-w-0">
         <div className="text-xs text-muted">{label}</div>
         <div className="break-all font-extrabold" dir="ltr">{value}</div>
@@ -22,14 +22,15 @@ function CopyRow({ label, value }: { label: string; value: string }) {
       <button
         type="button"
         className="btn btn-ghost !min-h-10 !px-4 text-sm"
-        onClick={() => {
-          void navigator.clipboard?.writeText(value.replace(/\s/g, ""));
+        onClick={async () => {
+          try { await navigator.clipboard.writeText(value.replace(/\s/g, "")); } catch {}
           setOk(true);
           setTimeout(() => setOk(false), 1500);
         }}
       >
         {ok ? `✓ ${t("copied")}` : t("copy")}
       </button>
+      <span className="sr-only" role="status">{ok ? t("copied") : ""}</span>
     </div>
   );
 }
@@ -61,7 +62,7 @@ function OrderView() {
     `الاسم: ${order.customer.name}`,
     `الجوال: ${order.customer.phone}`,
     `التسليم: ${order.customer.city} - ${order.customer.date} ${order.customer.time}`,
-    order.payment.type === "transfer" ? "مرفق إيصال التحويل 👇" : "",
+    order.payment.type === "transfer" ? "سأرفق صورة إيصال التحويل في المحادثة بعد هذه الرسالة 🙏" : "",
     `رمز الطلب: ${orderToCode(order)}`,
   ]
     .filter(Boolean)
@@ -81,6 +82,14 @@ function OrderView() {
       {order.payment.type === "transfer" ? (
         <section className="card space-y-3 p-5 md:p-6">
           <h2 className="text-xl font-bold">{t("pay_now")}</h2>
+          <ol className="space-y-2 text-sm font-bold">
+            {(["step_1", "step_2", "step_3"] as const).map((k, i) => (
+              <li key={k} className="flex items-start gap-2">
+                <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-berry text-xs text-white">{i + 1}</span>
+                {t(k)}
+              </li>
+            ))}
+          </ol>
           <div className="rounded-2xl bg-gradient-to-br from-berry to-berry-deep p-4 text-white">
             <div className="text-sm opacity-80">{t("amount_due")}</div>
             <div className="text-3xl font-extrabold">{money(order.totals.total)}</div>

@@ -88,6 +88,7 @@ function Footer() {
         </div>
         <div className="space-y-2 text-sm">
           <Link className="block hover:text-blush" href="/shop/">{t("shop")}</Link>
+          <Link className="block hover:text-blush" href="/policies/">{t("policies")}</Link>
           <Link className="block hover:text-blush" href="/admin/">{t("admin")}</Link>
         </div>
       </div>
