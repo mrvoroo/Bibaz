@@ -10,6 +10,7 @@ import { UpsellBlock } from "@/components/UpsellBlock";
 import { useCartResult } from "@/lib/hooks";
 import { uid, useCart, useDb, useOrders, useT } from "@/lib/store";
 import type { Order } from "@/lib/types";
+import { buildOrderMessage, whatsappUrl } from "@/lib/orderMessage";
 
 const SLOTS = ["10:00 - 13:00", "13:00 - 16:00", "16:00 - 19:00", "19:00 - 22:00"];
 // strip control characters / newlines so free text cannot forge extra lines in the WhatsApp message
@@ -46,6 +47,20 @@ export default function CheckoutPage() {
   const [gift, setGift] = useState({ on: false, name: "", phone: "", msg: "" });
   const result = useCartResult({ cod: pay?.type === "cod", district: f.district });
   const minDate = useMemo(() => dateStr(new Date(Date.now() + settings.prepHours * 3600_000)), [settings.prepHours]);
+  const [loc, setLoc] = useState("");
+  const [locState, setLocState] = useState<"" | "busy" | "ok" | "fail">("");
+  const getLocation = () => {
+    if (!navigator.geolocation) return setLocState("fail");
+    setLocState("busy");
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        setLoc(`https://maps.google.com/?q=${p.coords.latitude.toFixed(6)},${p.coords.longitude.toFixed(6)}`);
+        setLocState("ok");
+      },
+      () => setLocState("fail"),
+      { enableHighAccuracy: true, timeout: 10000 },
+    );
+  };
   const [errs, setErrs] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
@@ -97,6 +112,7 @@ export default function CheckoutPage() {
         address: f.address.trim().slice(0, 300),
         date: f.date,
         time: f.time,
+        map: loc || undefined,
         notes: [
           gift.on ? `🎁 هدية إلى ${clean(gift.name, 60)} (${gift.phone.replace(/[^\d+]/g, "").slice(0, 16)})${clean(gift.msg, 120) ? ` «${clean(gift.msg, 120)}»` : ""} - بدون ذكر الأسعار` : "",
           clean(f.notes, 300),
@@ -120,6 +136,9 @@ export default function CheckoutPage() {
       coupon: result.couponState === "valid" ? coupon.trim().toUpperCase() : undefined,
     };
     addOrder(order);
+    // Open WhatsApp right away with the full order details (runs inside the click handler, so it is not popup-blocked)
+    const wa = whatsappUrl(settings.whatsapp, buildOrderMessage(order, "بيباز"));
+    if (wa) window.open(wa, "_blank", "noopener");
     clear();
     router.push(`/order/?id=${order.id}`);
   };
@@ -177,6 +196,14 @@ export default function CheckoutPage() {
               <label htmlFor="f-address" className="mb-1 block text-sm font-bold">{t("address")}</label>
               <textarea id="f-address" className="input" value={f.address} onChange={set("address")} aria-invalid={!!errs.address} aria-describedby={errs.address ? "e-address" : undefined} maxLength={300} autoComplete="street-address" />
               {errs.address && <p id="e-address" className="mt-1 text-sm font-bold text-red-600">{errs.address}</p>}
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <button type="button" className="btn btn-ghost !min-h-10 text-sm" onClick={getLocation} disabled={locState === "busy"}>
+                  📍 {t("share_location")}
+                </button>
+                <span role="status" aria-live="polite" className={`text-sm font-bold ${locState === "ok" ? "text-green-700" : "text-red-600"}`}>
+                  {locState === "ok" ? t("location_added") : locState === "fail" ? t("location_fail") : ""}
+                </span>
+              </div>
             </div>
             <div className="rounded-2xl bg-cream p-3">
               <label className="flex cursor-pointer items-center gap-3 font-bold">

@@ -281,7 +281,7 @@ export const SEED: StoreData = {
   settings: {
     storeName: { ar: "بيباز", en: "Bibaz" },
     tagline: { ar: "تشيز كيك يُصنع بحب", en: "Cheesecake made with love" },
-    whatsapp: "966500000000",
+    whatsapp: "966536955425",
     instagram: "bibaz",
     announcement: {
       ar: "اطلب قبل 24 ساعة لضمان أطزج كيكة ✨",

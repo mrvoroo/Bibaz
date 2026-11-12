@@ -166,6 +166,7 @@ export interface Order {
     date: string;
     time: string;
     notes: string;
+    map?: string; // optional Google Maps link of the customer's shared location
   };
   lines: {
     name: string;

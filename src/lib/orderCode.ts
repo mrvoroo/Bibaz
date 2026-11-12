@@ -42,6 +42,7 @@ export function codeToOrder(code: string): Order | null {
         date: str(c.u.date, 12),
         time: str(c.u.time, 20),
         notes: str(c.u.notes),
+        map: /^https:\/\/maps\.google\.com\/\?q=-?[\d.]+,-?[\d.]+$/.test(String(c.u.map ?? "")) ? String(c.u.map) : undefined,
       },
       lines: Array.isArray(c.l)
         ? c.l.slice(0, 50).map((l: Record<string, unknown>) => ({

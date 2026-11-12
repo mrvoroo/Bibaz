@@ -7,7 +7,7 @@ import { motion } from "motion/react";
 import { Shell } from "@/components/Shell";
 import { Drip } from "@/components/Drip";
 import { useDb, useOrders, useT } from "@/lib/store";
-import { orderToCode } from "@/lib/orderCode";
+import { buildOrderMessage, whatsappUrl } from "@/lib/orderMessage";
 
 function CopyRow({ label, value }: { label: string; value: string }) {
   const { t } = useT();
@@ -51,30 +51,14 @@ function OrderView() {
   }
 
   const method = settings.transfer.find((m) => m.id === order.payment.methodId);
-  const lineText = order.lines
-    .map((l) => `• ${l.name} ${l.cm}سم × ${l.qty}${l.addons.length ? ` (+${l.addons.join("، ")})` : ""}${l.text ? ` «${l.text}»` : ""}`)
-    .join("\n");
-  const msg = [
-    `طلب جديد ${order.id}`,
-    lineText,
-    `الإجمالي: ${order.totals.total} ر.س`,
-    `الدفع: ${order.payment.methodName}`,
-    `الاسم: ${order.customer.name}`,
-    `الجوال: ${order.customer.phone}`,
-    `التسليم: ${order.customer.city} - ${order.customer.date} ${order.customer.time}`,
-    order.payment.type === "transfer" ? "سأرفق صورة إيصال التحويل في المحادثة بعد هذه الرسالة 🙏" : "",
-    `رمز الطلب: ${orderToCode(order)}`,
-  ]
-    .filter(Boolean)
-    .join("\n");
-  const waNumber = /^\d{9,15}$/.test(settings.whatsapp) ? settings.whatsapp : "";
-  const waHref = `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+  const waHref = whatsappUrl(settings.whatsapp, buildOrderMessage(order, "بيباز")) ?? "#";
 
   return (
     <div className="container-x max-w-2xl py-10 md:py-16">
       <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 16 }} className="mb-6 text-center">
         <div className="mx-auto mb-3 grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-berry to-berry-deep text-4xl text-white shadow-soft">✓</div>
         <h1 className="text-4xl font-bold text-choco">{t("order_received")}</h1>
+        <p className="mx-auto mt-3 max-w-md rounded-2xl bg-green-50 p-3 text-sm font-bold text-green-800" role="status">💬 {t("wa_opened_note")}</p>
         <p className="mt-2 text-muted">
           {t("order_no")}: <b className="text-ink" dir="ltr">{order.id}</b>
         </p>
@@ -105,7 +89,7 @@ function OrderView() {
             </>
           ) : null}
           <a href={waHref} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full !min-h-14 text-lg">
-            💬 {t("send_receipt")}
+            💬 {t("send_order_wa")}
           </a>
           <p className="text-center text-sm font-bold text-berry-deep">{t("receipt_hint")}</p>
         </section>

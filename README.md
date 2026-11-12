@@ -32,9 +32,8 @@ To publish: Admin → **Export store-data.json** → replace `public/store-data.
 GitHub Actions redeploys and every customer sees it. (Orders/PII are never included in the export.)
 
 ### How orders reach you
-After checkout the customer sees the transfer details and a **WhatsApp** button that sends the order and a base64 *order code*
-to your number. In Admin → Orders paste the code to register the order and track its status.
-Set your number in Admin → Settings (`9665XXXXXXXX`).
+The moment the customer taps **Place order**, WhatsApp opens automatically on **+966 53 695 5425** with a ready message containing every detail (items, sizes, add-ons, cake text, totals, discount, district/address, optional map location, delivery slot, payment method and an order code). The customer just taps Send, then attaches the transfer receipt. In Admin → Orders paste the code to register the order and track its status.
+Change the number in Admin → Settings (`9665XXXXXXXX`).
 
 > Want real-time orders, shared stock and server-side validation? The next step is a small backend
 > (e.g. Supabase). All data access goes through `src/lib/store.ts`, so it is a contained change.
