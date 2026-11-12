@@ -256,6 +256,7 @@ export const useCart = create<CartState>()(
 
 interface OrdersState {
   orders: Order[];
+  setAll: (o: Order[]) => void;
   addOrder: (o: Order) => void;
   setStatus: (id: string, s: OrderStatus) => void;
   removeOrder: (id: string) => void;
@@ -264,6 +265,7 @@ export const useOrders = create<OrdersState>()(
   persist(
     (set, get) => ({
       orders: [],
+      setAll: (orders) => set({ orders }),
       addOrder: (o) => set({ orders: [o, ...get().orders.filter((x) => x.id !== o.id)] }),
       setStatus: (id, status) => set({ orders: get().orders.map((o) => (o.id === id ? { ...o, status } : o)) }),
       removeOrder: (id) => set({ orders: get().orders.filter((o) => o.id !== id) }),

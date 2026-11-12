@@ -27,6 +27,10 @@ jobs:
       # Project page (user.github.io/<repo>): base path = repo name.
       # Custom domain or <user>.github.io repo: add repository variable ROOT_SITE=true.
       - name: Build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_VAPID_PUBLIC_KEY: ${{ vars.NEXT_PUBLIC_VAPID_PUBLIC_KEY }}
         run: |
           if [ "${{ vars.ROOT_SITE }}" = "true" ]; then export NEXT_PUBLIC_BASE_PATH=""; else export NEXT_PUBLIC_BASE_PATH="/${{ github.event.repository.name }}"; fi
           npm run build

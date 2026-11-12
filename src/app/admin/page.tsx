@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { sha256, useDb, useLangStore, useT } from "@/lib/store";
+import { BASE_PATH, sha256, useDb, useLangStore, useT } from "@/lib/store";
+import { backendEnabled, sbSession, sbSignIn, sbSignOut } from "@/lib/backend";
 import { Logo } from "@/components/Logo";
 import { Dashboard, Agents } from "@/components/admin/Dashboard";
 import { Products } from "@/components/admin/Products";
@@ -24,6 +25,37 @@ const TABS = [
   { k: "agents", ar: "تقييم الوكلاء", en: "Agent scorecards", icon: "🛡" },
 ] as const;
 type Tab = (typeof TABS)[number]["k"];
+
+function SbGate({ onOk }: { onOk: () => void }) {
+  const L = useL();
+  const [email, setEmail] = useState("");
+  const [pw, setPw] = useState("");
+  const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="grid min-h-screen place-items-center p-4">
+      <form
+        className="card w-full max-w-sm space-y-4 p-6 text-center"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setBusy(true);
+          const r = await sbSignIn(email.trim(), pw);
+          setBusy(false);
+          if (r) setErr(L("بيانات الدخول غير صحيحة", "Incorrect email or password"));
+          else onOk();
+        }}
+      >
+        <div className="flex justify-center"><Logo /></div>
+        <h1 className="text-2xl font-bold">{L("دخول الإدارة", "Admin sign in")}</h1>
+        <input type="email" dir="ltr" className="input text-center" placeholder="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" aria-label="email" />
+        <input type="password" dir="ltr" className="input text-center" placeholder={L("كلمة المرور", "Password")} value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="current-password" aria-label="password" />
+        {err && <p role="alert" className="text-sm font-bold text-red-600">{err}</p>}
+        <button className="btn btn-primary w-full" disabled={busy || !email || !pw}>{L("دخول", "Sign in")}</button>
+        <Link href="/" className="block text-sm text-muted hover:text-berry">← {L("العودة للمتجر", "Back to store")}</Link>
+      </form>
+    </div>
+  );
+}
 
 function Gate({ onOk }: { onOk: () => void }) {
   const L = useL();
@@ -91,13 +123,18 @@ export default function AdminPage() {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    try { setOk(sessionStorage.getItem(SESSION_KEY) === "1"); } catch { setOk(false); }
+    if (backendEnabled) void sbSession().then((ses) => setOk(!!ses)).catch(() => setOk(false));
+    else { try { setOk(sessionStorage.getItem(SESSION_KEY) === "1"); } catch { setOk(false); } }
+    // make the admin panel installable (PWA)
+    const add = (rel: string, href: string) => { if (!document.querySelector(`link[rel="${rel}"]`)) { const l = document.createElement("link"); l.rel = rel; l.href = href; document.head.appendChild(l); } };
+    add("manifest", `${BASE_PATH}/admin.webmanifest`);
+    add("apple-touch-icon", `${BASE_PATH}/icons/apple-touch-icon.png`);
     const h = location.hash.replace("#", "") as Tab;
     if (TABS.some((t) => t.k === h)) setTab(h);
   }, []);
 
   if (ok === null) return null;
-  if (!ok) return <Gate onOk={() => setOk(true)} />;
+  if (!ok) return backendEnabled ? <SbGate onOk={() => setOk(true)} /> : <Gate onOk={() => setOk(true)} />;
 
   const download = () => {
     const blob = new Blob([exportJson()], { type: "application/json" });
@@ -115,7 +152,7 @@ export default function AdminPage() {
           <Link href="/" aria-label="Store"><Logo /></Link>
           <div className="flex items-center gap-2">
             <button type="button" className="rounded-full border border-line bg-white px-3 py-1.5 text-sm font-bold" onClick={() => setLang(lang === "ar" ? "en" : "ar")}>{lang === "ar" ? "English" : "عربي"}</button>
-            <button type="button" className="btn btn-ghost !min-h-10 text-sm" onClick={() => { try { sessionStorage.removeItem(SESSION_KEY); } catch {} setOk(false); }}>{L("خروج", "Log out")}</button>
+            <button type="button" className="btn btn-ghost !min-h-10 text-sm" onClick={() => { try { sessionStorage.removeItem(SESSION_KEY); } catch {} if (backendEnabled) void sbSignOut(); setOk(false); }}>{L("خروج", "Log out")}</button>
           </div>
         </div>
         <div className="mx-auto max-w-7xl overflow-x-auto px-4 pb-2" role="tablist" aria-label="Admin sections">

@@ -10,7 +10,7 @@ import { UpsellBlock } from "@/components/UpsellBlock";
 import { useCartResult } from "@/lib/hooks";
 import { uid, useCart, useDb, useOrders, useT } from "@/lib/store";
 import type { Order } from "@/lib/types";
-import { buildOrderMessage, whatsappUrl } from "@/lib/orderMessage";
+import { submitOrderRemote } from "@/lib/backend";
 
 const SLOTS = ["10:00 - 13:00", "13:00 - 16:00", "16:00 - 19:00", "19:00 - 22:00"];
 // strip control characters / newlines so free text cannot forge extra lines in the WhatsApp message
@@ -78,7 +78,7 @@ export default function CheckoutPage() {
     );
   }
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const er: Record<string, string> = {};
     if (f.name.trim().length < 2) er.name = t("required");
@@ -120,6 +120,7 @@ export default function CheckoutPage() {
         ].filter(Boolean).join(" | ").slice(0, 300),
       },
       lines: result.lines.map((l) => ({
+        pid: l.product.id,
         name: l.product.name.ar,
         cm: l.line.cm,
         qty: l.line.qty,
@@ -136,10 +137,9 @@ export default function CheckoutPage() {
       },
       coupon: result.couponState === "valid" ? coupon.trim().toUpperCase() : undefined,
     };
+    // Register the order with the store backend (admin dashboard + push notification). Falls back to local mode.
+    order.synced = await Promise.race([submitOrderRemote(order), new Promise<boolean>((r) => setTimeout(() => r(false), 8000))]);
     addOrder(order);
-    // Open WhatsApp right away with the full order details (runs inside the click handler, so it is not popup-blocked)
-    const wa = whatsappUrl(settings.whatsapp, buildOrderMessage(order, "بيباز"));
-    if (wa) window.open(wa, "_blank", "noopener");
     clear();
     router.push(`/order/?id=${order.id}`);
   };

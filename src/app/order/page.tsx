@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { Shell } from "@/components/Shell";
-import { Drip } from "@/components/Drip";
+import { InvoiceSheet, makeInvoicePdf } from "@/components/Invoice";
 import { useDb, useOrders, useT } from "@/lib/store";
-import { buildOrderMessage, whatsappUrl } from "@/lib/orderMessage";
+import { downloadBlob, sharePdf, waLink } from "@/lib/share";
 
 function CopyRow({ label, value }: { label: string; value: string }) {
   const { t } = useT();
@@ -40,6 +40,20 @@ function OrderView() {
   const { t, tx, money, lang } = useT();
   const order = useOrders((s) => s.orders.find((o) => o.id === id));
   const settings = useDb((s) => s.data.settings);
+  const sheet = useRef<HTMLDivElement>(null);
+  const [pdf, setPdf] = useState<Blob | null>(null);
+  const [pdfErr, setPdfErr] = useState(false);
+  const [note, setNote] = useState("");
+
+  // Pre-build the invoice PDF so sharing can happen instantly inside the tap (needed on iOS/Android share sheets)
+  useEffect(() => {
+    if (!order || !sheet.current) return;
+    let dead = false;
+    const timer = setTimeout(() => {
+      makeInvoicePdf(sheet.current!).then((b) => !dead && setPdf(b)).catch(() => !dead && setPdfErr(true));
+    }, 600);
+    return () => { dead = true; clearTimeout(timer); };
+  }, [order?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!order) {
     return (
@@ -50,18 +64,30 @@ function OrderView() {
     );
   }
 
+  const file = `bibaz-${order.id}.pdf`;
+  const waNumber = /^\d{9,15}$/.test(settings.whatsapp) ? settings.whatsapp : "";
+  const short = `طلب جديد ${order.id} بقيمة ${order.totals.total} ر.س من ${order.customer.name}. الفاتورة PDF مرفقة.`;
   const method = settings.transfer.find((m) => m.id === order.payment.methodId);
-  const waHref = whatsappUrl(settings.whatsapp, buildOrderMessage(order, "بيباز")) ?? "#";
+
+  const sendWa = async () => {
+    if (!pdf) return;
+    if (await sharePdf(pdf, file, short)) return setNote(t("pdf_shared"));
+    downloadBlob(pdf, file);
+    setNote(t("pdf_attach_hint"));
+    if (waNumber) window.open(waLink(waNumber, short), "_blank", "noopener");
+  };
 
   return (
     <div className="container-x max-w-2xl py-10 md:py-16">
       <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 200, damping: 16 }} className="mb-6 text-center">
         <div className="mx-auto mb-3 grid h-20 w-20 place-items-center rounded-full bg-gradient-to-br from-berry to-berry-deep text-4xl text-white shadow-soft">✓</div>
         <h1 className="text-4xl font-bold text-choco">{t("order_received")}</h1>
-        <p className="mx-auto mt-3 max-w-md rounded-2xl bg-green-50 p-3 text-sm font-bold text-green-800" role="status">💬 {t("wa_opened_note")}</p>
         <p className="mt-2 text-muted">
           {t("order_no")}: <b className="text-ink" dir="ltr">{order.id}</b>
         </p>
+        {order.synced ? (
+          <p className="mx-auto mt-3 max-w-md rounded-2xl bg-green-50 p-3 text-sm font-bold text-green-800" role="status">✓ {t("order_registered")}</p>
+        ) : null}
       </motion.div>
 
       {order.payment.type === "transfer" ? (
@@ -88,19 +114,27 @@ function OrderView() {
               {tx(method.note) && <p className="text-sm text-muted">{tx(method.note)}</p>}
             </>
           ) : null}
-          <a href={waHref} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full !min-h-14 text-lg">
-            💬 {t("send_order_wa")}
-          </a>
           <p className="text-center text-sm font-bold text-berry-deep">{t("receipt_hint")}</p>
         </section>
       ) : (
-        <section className="card space-y-3 p-5 md:p-6">
+        <section className="card p-5 md:p-6">
           <p className="font-bold">{t("cod_note")}</p>
-          <a href={waHref} target="_blank" rel="noopener noreferrer" className="btn btn-primary w-full !min-h-14">
-            💬 {t("whatsapp")}
-          </a>
         </section>
       )}
+
+      <section className="card mt-5 space-y-3 p-5">
+        <h2 className="text-lg font-bold">📄 {t("invoice_pdf")}</h2>
+        <p className="text-sm text-muted">{order.synced ? t("invoice_hint_synced") : t("invoice_hint_local")}</p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <button type="button" className="btn btn-primary !min-h-14" disabled={!pdf} onClick={sendWa}>
+            💬 {pdf ? t("send_pdf_wa") : pdfErr ? t("pdf_failed") : t("pdf_preparing")}
+          </button>
+          <button type="button" className="btn btn-ghost !min-h-14" disabled={!pdf} onClick={() => pdf && downloadBlob(pdf, file)}>
+            ⬇ {t("download_pdf")}
+          </button>
+        </div>
+        {note && <p role="status" className="text-sm font-bold text-green-700">{note}</p>}
+      </section>
 
       <section className="card mt-5 p-5">
         <h2 className="mb-3 text-lg font-bold">{t("order_summary")}</h2>
@@ -117,11 +151,15 @@ function OrderView() {
         </p>
       </section>
 
-      <div className="relative mt-10 text-center">
+      <div className="mt-10 text-center">
         <Link href="/shop/" className="btn btn-ghost">{t("continue_shopping")}</Link>
         <p className="sr-only">{lang}</p>
       </div>
-      <Drip fill="#fbdfe3" height={60} className="mt-10 opacity-0" />
+
+      {/* off-screen invoice used to build the PDF */}
+      <div aria-hidden style={{ position: "fixed", left: -10000, top: 0, pointerEvents: "none" }}>
+        <InvoiceSheet ref={sheet} order={order} storeName="بيباز" phone={settings.whatsapp ? `+${settings.whatsapp}` : undefined} />
+      </div>
     </div>
   );
 }

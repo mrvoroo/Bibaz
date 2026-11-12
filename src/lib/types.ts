@@ -169,6 +169,7 @@ export interface Order {
     map?: string; // optional Google Maps link of the customer's shared location
   };
   lines: {
+    pid?: string; // product id (for thumbnails in the admin view)
     name: string;
     cm: number;
     qty: number;
@@ -184,4 +185,5 @@ export interface Order {
     total: number;
   };
   coupon?: string;
+  synced?: boolean; // true = stored in the store backend (local flag, not sent)
 }

@@ -32,8 +32,7 @@ To publish: Admin → **Export store-data.json** → replace `public/store-data.
 GitHub Actions redeploys and every customer sees it. (Orders/PII are never included in the export.)
 
 ### How orders reach you
-The moment the customer taps **Place order**, WhatsApp opens automatically on **+966 53 695 5425** with a ready message containing every detail (items, sizes, add-ons, cake text, totals, discount, district/address, optional map location, delivery slot, payment method and an order code). The customer just taps Send, then attaches the transfer receipt. In Admin → Orders paste the code to register the order and track its status.
-Change the number in Admin → Settings (`9665XXXXXXXX`).
+After **Place order** the customer gets an **invoice PDF** (download or share to WhatsApp) and, when the backend is enabled, the order is stored in Supabase and appears instantly in Admin → Orders with a push notification on your phone. In Admin → Orders open an order to see it exactly as the customer saw it, download the PDF invoice, and send it to the customer on WhatsApp (their number is taken from the order). The admin panel is an installable app (PWA). Backend setup: see **SETUP-BACKEND.md**.
 
 > Want real-time orders, shared stock and server-side validation? The next step is a small backend
 > (e.g. Supabase). All data access goes through `src/lib/store.ts`, so it is a contained change.
