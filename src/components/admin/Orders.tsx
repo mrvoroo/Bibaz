@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useDb, useOrders, useT } from "@/lib/store";
 import { codeToOrder } from "@/lib/orderCode";
+import { parseOrderMessage } from "@/lib/orderMessage";
 import type { OrderStatus } from "@/lib/types";
 import { Badge, Panel, useL } from "./ui";
 
@@ -31,15 +32,15 @@ export function Orders() {
   return (
     <>
       <Panel title={L("استيراد طلب من رسالة واتساب", "Import an order from WhatsApp")}>
-        <p className="mb-3 text-sm text-muted">{L("كل رسالة طلب تصلك على واتساب فيها «رمز الطلب». الصقه هنا لتسجيل الطلب ومتابعة حالته.", "Each WhatsApp order message contains an “order code”. Paste it here to register and track the order.")}</p>
+        <p className="mb-3 text-sm text-muted">{L("انسخ رسالة الطلب كاملة من واتساب والصقها هنا لتسجيل الطلب ومتابعة حالته (تدعم أيضًا الرسائل القديمة التي فيها رمز الطلب).", "Copy the whole order message from WhatsApp and paste it here to register and track the order (older messages with an order code also work).")}</p>
         <div className="flex flex-wrap gap-2">
-          <input className="input !min-h-11 flex-1" dir="ltr" value={code} onChange={(e) => { setCode(e.target.value); setErr(false); }} placeholder={L("الصق رمز الطلب", "Paste order code")} />
+          <textarea className="input !min-h-[120px] flex-1" dir="auto" value={code} onChange={(e) => { setCode(e.target.value.slice(0, 12000)); setErr(false); }} placeholder={L("الصق رسالة الطلب هنا", "Paste the order message here")} />
           <button
             type="button"
             className="btn btn-primary !min-h-11"
             onClick={() => {
-              const m = code.match(/[A-Za-z0-9+/=]{40,}/);
-              const o = m ? codeToOrder(m[0]) : null;
+              const m = code.match(/[A-Za-z0-9+/=]{80,}/);
+              const o = parseOrderMessage(code) ?? (m ? codeToOrder(m[0]) : null);
               if (!o) return setErr(true);
               addOrder(o);
               setCode("");
@@ -48,7 +49,7 @@ export function Orders() {
             {L("استيراد", "Import")}
           </button>
         </div>
-        {err && <p className="mt-2 text-sm font-bold text-red-600">{L("الرمز غير صالح", "Invalid code")}</p>}
+        {err && <p className="mt-2 text-sm font-bold text-red-600">{L("تعذّر قراءة الرسالة، تأكد أنك نسخت الرسالة كاملة", "Could not read the message, make sure you pasted all of it")}</p>}
       </Panel>
 
       <Panel title={`${L("الطلبات", "Orders")} (${orders.length})`}>

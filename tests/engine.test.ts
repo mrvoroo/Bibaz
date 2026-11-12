@@ -41,3 +41,16 @@ r = computeCart([L("p1", 15, 1)], d.products, d.addons, d.offers, d.settings, ""
 assert(r.shipping === 35, `district الشفا => ${r.shipping}`);
 r = computeCart([L("p1", 15, 1)], d.products, d.addons, d.offers, d.settings, "", { district: "الملقا" });
 assert(r.shipping === 20, `district الملقا => ${r.shipping}`);
+// order message round-trip (WhatsApp text -> admin import)
+import { buildOrderMessage, parseOrderMessage } from "../src/lib/orderMessage";
+const order: any = {
+  id: "BZ-ABC123", createdAt: "x", status: "new",
+  payment: { type: "transfer", methodName: "تحويل عبر برق (Barq)" },
+  customer: { name: "أحمد", phone: "0590873178", city: "الرياض - النخيل", address: "شارع كذا، مبنى/فيلا 7", date: "2026-11-13", time: "10:00 - 13:00", notes: "" },
+  lines: [{ name: "نيويورك كلاسيك", cm: 15, qty: 2, unit: 95, addons: ["شموع", "بطاقة"], text: "مبروك" }],
+  totals: { subtotal: 190, addons: 58, discount: 0, shipping: 20, total: 268 },
+};
+const msg = buildOrderMessage(order);
+assert(!/[\u{1F300}-\u{1FAFF}\u2501]/u.test(msg), "message has no emoji/box chars");
+const back = parseOrderMessage(msg)!;
+assert(!!back && back.id === "BZ-ABC123" && back.totals.total === 268 && back.lines[0].qty === 2 && back.lines[0].unit === 95 && back.customer.time === "10:00 - 13:00" && back.lines[0].text === "مبروك", "parse(build(order)) round-trips");
